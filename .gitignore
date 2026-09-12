@@ -1,0 +1,10 @@
+# Credenciais reais de banco de dados — nunca versionar
+admin/includes/config.php
+public/includes/config.php
+
+# Arquivos comuns de sistema/editor
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
