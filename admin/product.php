@@ -1,0 +1,1 @@
+<?php require __DIR__.'/includes/bootstrap.php';if($_SERVER['REQUEST_METHOD']!=='POST')redirect('catalog.php');try{cart_add((int)$_POST['id'],(int)($_POST['qty']??1),trim($_POST['size']??''),trim($_POST['color']??''));redirect('cart.php');}catch(Throwable $e){http_response_code(400);exit(e($e->getMessage()));}

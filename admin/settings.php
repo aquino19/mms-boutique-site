@@ -1,100 +1,25 @@
 <?php
-require_once __DIR__ . '/includes/auth.php';
-requireLogin();
-
-$pdo = getDbConnection();
-
-$errors = [];
-$saved = isset($_GET['saved']);
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $storeName = trim($_POST['store_name'] ?? '');
-    $contactEmail = trim($_POST['contact_email'] ?? '');
-    $gatewayProvider = $_POST['gateway_provider'] ?? '';
-    $gatewayAccessToken = trim($_POST['gateway_access_token'] ?? '');
-    $gatewayPublicKey = trim($_POST['gateway_public_key'] ?? '');
-
-    if ($storeName === '') {
-        $errors[] = 'O nome da loja é obrigatório.';
-    }
-    if ($gatewayProvider !== '' && !in_array($gatewayProvider, ['mercadopago', 'pagseguro'], true)) {
-        $errors[] = 'Gateway de pagamento inválido.';
-    }
-
-    if (empty($errors)) {
-        // NOTA: em produção, gatewayAccessToken deve ser criptografado antes de
-        // gravar no banco (ex: com sodium_crypto_secretbox ou openssl_encrypt),
-        // nunca guardado em texto puro como está aqui na versão de teste.
-        $stmt = $pdo->prepare(
-            'UPDATE store_settings
-             SET store_name = :store_name,
-                 contact_email = :contact_email,
-                 gateway_provider = :gateway_provider,
-                 gateway_access_token = :gateway_access_token,
-                 gateway_public_key = :gateway_public_key
-             WHERE id = 1'
-        );
-        $stmt->execute([
-            'store_name' => $storeName,
-            'contact_email' => $contactEmail,
-            'gateway_provider' => $gatewayProvider !== '' ? $gatewayProvider : null,
-            'gateway_access_token' => $gatewayAccessToken !== '' ? $gatewayAccessToken : null,
-            'gateway_public_key' => $gatewayPublicKey !== '' ? $gatewayPublicKey : null,
-        ]);
-
-        header('Location: settings.php?saved=1');
-        exit;
-    }
+function e($value): string { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); }
+function redirect(string $url): never { header('Location: ' . $url); exit; }
+function csrf_token(): string { if (empty($_SESSION['csrf'])) $_SESSION['csrf'] = bin2hex(random_bytes(32)); return $_SESSION['csrf']; }
+function csrf_field(): string { return '<input type="hidden" name="csrf" value="'.e(csrf_token()).'">'; }
+function verify_csrf(): void { if (!hash_equals($_SESSION['csrf'] ?? '', $_POST['csrf'] ?? '')) { http_response_code(419); exit('Token CSRF inválido.'); } }
+function flash(?string $type=null, ?string $message=null): ?array { if ($message !== null) { $_SESSION['flash'] = [$type,$message]; return null; } $f=$_SESSION['flash']??null; unset($_SESSION['flash']); return $f; }
+function admin_user(): ?array { return $_SESSION['admin_user'] ?? null; }
+function require_admin(): void { if (!admin_user()) redirect('../login.php'); }
+function setting(string $key, string $default=''): string { static $cache=[]; if(array_key_exists($key,$cache)) return $cache[$key]; $s=db()->prepare('SELECT value FROM settings WHERE `key`=? LIMIT 1'); $s->execute([$key]); return $cache[$key]=$s->fetchColumn() ?: $default; }
+function slugify(string $text): string { $text=iconv('UTF-8','ASCII//TRANSLIT',$text); $text=preg_replace('/[^a-zA-Z0-9]+/','-',strtolower($text)); return trim($text,'-'); }
+function upload_image(array $file): ?string {
+    if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) return null;
+    if ($file['error'] !== UPLOAD_ERR_OK) throw new RuntimeException('Falha no upload.');
+    if ($file['size'] > 5*1024*1024) throw new RuntimeException('Imagem acima de 5 MB.');
+    $mime=(new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
+    $allowed=['image/jpeg'=>'jpg','image/png'=>'png','image/webp'=>'webp'];
+    if (!isset($allowed[$mime])) throw new RuntimeException('Formato de imagem não permitido.');
+    if (!is_dir(UPLOAD_DIR)) mkdir(UPLOAD_DIR,0755,true);
+    $name=bin2hex(random_bytes(16)).'.'.$allowed[$mime];
+    if (!move_uploaded_file($file['tmp_name'],UPLOAD_DIR.$name)) throw new RuntimeException('Não foi possível salvar a imagem.');
+    return 'uploads/'.$name;
 }
-
-$settings = $pdo->query('SELECT * FROM store_settings WHERE id = 1')->fetch();
-
-$pageTitle = 'Configurações';
-require __DIR__ . '/includes/layout_start.php';
-?>
-
-<h1>Configurações da loja</h1>
-
-<?php if ($saved): ?>
-  <div class="success">Configurações salvas com sucesso.</div>
-<?php endif; ?>
-
-<?php foreach ($errors as $error): ?>
-  <div class="error"><?= htmlspecialchars($error) ?></div>
-<?php endforeach; ?>
-
-<form class="card" method="post" action="settings.php">
-  <label for="store_name">Nome da loja</label>
-  <input type="text" id="store_name" name="store_name" required
-         value="<?= htmlspecialchars($settings['store_name'] ?? '') ?>">
-
-  <label for="contact_email">E-mail de contato</label>
-  <input type="email" id="contact_email" name="contact_email"
-         value="<?= htmlspecialchars($settings['contact_email'] ?? '') ?>">
-
-  <label for="gateway_provider">Gateway de pagamento</label>
-  <select id="gateway_provider" name="gateway_provider">
-    <option value="">— Selecione —</option>
-    <option value="mercadopago" <?= ($settings['gateway_provider'] ?? '') === 'mercadopago' ? 'selected' : '' ?>>
-      Mercado Pago
-    </option>
-    <option value="pagseguro" <?= ($settings['gateway_provider'] ?? '') === 'pagseguro' ? 'selected' : '' ?>>
-      PagSeguro
-    </option>
-  </select>
-
-  <label for="gateway_access_token">Access Token do gateway</label>
-  <input type="text" id="gateway_access_token" name="gateway_access_token"
-         placeholder="Cole aqui o token de acesso da conta do gateway"
-         value="<?= htmlspecialchars($settings['gateway_access_token'] ?? '') ?>">
-
-  <label for="gateway_public_key">Public Key (opcional, só Mercado Pago)</label>
-  <input type="text" id="gateway_public_key" name="gateway_public_key"
-         value="<?= htmlspecialchars($settings['gateway_public_key'] ?? '') ?>">
-
-  <div style="margin-top:20px;">
-    <button type="submit" class="btn">Salvar configurações</button>
-  </div>
-</form>
-
-<?php require __DIR__ . '/includes/layout_end.php'; ?>
+function money(float $v): string { return 'R$ '.number_format($v,2,',','.'); }
+function audit(string $action, ?int $orderId=null, ?string $meta=null): void { $u=admin_user(); $st=db()->prepare('INSERT INTO audit_logs(user_id,action,order_id,metadata,ip_address) VALUES(?,?,?,?,?)'); $st->execute([$u['id']??null,$action,$orderId,$meta,$_SERVER['REMOTE_ADDR']??'']); }
