@@ -4,12 +4,18 @@
 // com a variação correspondente, e sobrescreve o estoque daquela
 // unidade (o Firebird é sempre a fonte da verdade, não somamos).
 //
+// Vendas do site ainda NÃO lançadas no sistema da loja são descontadas
+// do número recebido (reserva), para o site não "devolver" estoque já
+// vendido. Contam como reserva os pedidos pagos sem erp_registered_at e
+// os pendentes de pagamento criados há menos de RESERVE_PENDING_DAYS dias.
+//
 // Autenticação simples por segredo compartilhado — troque o valor
 // abaixo por algo único antes de ir pra produção, e configure o
 // mesmo valor no header "X-Sync-Secret" do nó HTTP Request do n8n.
 // ============================================================
 
 define('STOCK_SYNC_SECRET', 'TROCAR_AQUI');
+define('RESERVE_PENDING_DAYS', 3);
 
 require_once __DIR__ . '/../includes/config.php';
 
@@ -54,6 +60,17 @@ $upsertStock = $pdo->prepare(
      ON DUPLICATE KEY UPDATE quantity = VALUES(quantity)'
 );
 
+$reservedStmt = $pdo->prepare(
+    'SELECT COALESCE(SUM(oi.quantity), 0)
+     FROM order_items oi
+     JOIN orders o ON o.id = oi.order_id
+     WHERE oi.variant_id = :variant_id
+       AND oi.fulfillment_location_id = :location_id
+       AND o.erp_registered_at IS NULL
+       AND (o.status = \'paid\'
+            OR (o.status = \'pending\' AND o.created_at >= NOW() - INTERVAL ' . (int)RESERVE_PENDING_DAYS . ' DAY))'
+);
+$reservedSkus = [];
 $updated = 0;
 $notFoundSkus = [];
 $touchedProducts = [];
@@ -76,10 +93,15 @@ try {
             continue;
         }
 
+        $reservedStmt->execute(['variant_id' => $variant['id'], 'location_id' => $locationId]);
+        $reserved = (int)$reservedStmt->fetchColumn();
+        if ($reserved > 0) {
+            $reservedSkus[$sku] = $reserved;
+        }
         $upsertStock->execute([
             'variant_id' => $variant['id'],
             'location_id' => $locationId,
-            'quantity' => (int)$quantity,
+            'quantity' => max(0, (int)$quantity - $reserved),
         ]);
         $touchedProducts[$variant['product_id']] = true;
         $updated++;
@@ -101,4 +123,5 @@ respond(200, [
     'location_code' => $input['location_code'],
     'variants_updated' => $updated,
     'skus_not_found' => $notFoundSkus,
+    'reserved_by_online_orders' => $reservedSkus,
 ]);

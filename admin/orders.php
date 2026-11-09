@@ -30,6 +30,30 @@ $methodLabels = [
     'delivery' => 'Entrega',
 ];
 
+// Andamento depois do pagamento (ver order_update.php)
+$fulfillmentFlow = [
+    'pickup'   => ['novo', 'separado', 'entregue'],
+    'delivery' => ['novo', 'separado', 'enviado', 'entregue'],
+];
+$fulfillmentLabels = [
+    'novo'     => 'Aguardando separação',
+    'separado' => 'Separado',
+    'enviado'  => 'Enviado',
+    'entregue' => 'Concluído',
+];
+$fulfillmentNextLabels = [
+    'pickup'   => ['separado' => 'Separado · pronto para retirada', 'entregue' => 'Retirado pela cliente'],
+    'delivery' => ['separado' => 'Separado · pronto para envio', 'enviado' => 'Enviado', 'entregue' => 'Entregue'],
+];
+
+if (empty($_SESSION['orders_csrf'])) {
+    $_SESSION['orders_csrf'] = bin2hex(random_bytes(16));
+}
+$flash = $_SESSION['orders_flash'] ?? null;
+unset($_SESSION['orders_flash']);
+
+$pendingErp = array_filter($orders, fn($o) => $o['status'] === 'paid' && $o['erp_registered_at'] === null);
+
 $pageTitle = 'Pedidos';
 require __DIR__ . '/includes/layout_start.php';
 ?>
@@ -48,9 +72,31 @@ require __DIR__ . '/includes/layout_start.php';
     background:var(--cream-2); border-radius:10px; margin-left:8px;
   }
   .variant-tag{ color:rgba(46,31,24,.6); font-size:12px; }
+  .flash{ padding:12px 16px; margin-bottom:16px; font-size:14px; background:#e6f2ea; border-left:3px solid #0E5C33; }
+  .flash.error{ background:#fbe9e5; border-left-color:#8C5443; }
+  .erp-alert{ padding:12px 16px; margin-bottom:16px; font-size:14px; background:#fff4d6; border-left:3px solid #D4AF37; }
+  .order-flow{ display:flex; flex-wrap:wrap; gap:12px 20px; align-items:center; padding:12px 16px; background:#faf7f0; border-top:1px solid var(--line); font-size:13px; }
+  .order-flow .erp-ok{ color:#0E5C33; font-weight:700; }
+  .order-flow .erp-missing{ color:#8C5443; font-weight:700; }
+  .order-flow form{ display:flex; flex-wrap:wrap; gap:10px 14px; align-items:center; margin-left:auto; }
+  .order-flow select{ padding:6px 8px; font-size:13px; }
+  .order-flow label.erp-check{ display:flex; gap:6px; align-items:center; font-weight:600; cursor:pointer; }
+  .order-flow button{ padding:7px 14px; font-size:12px; font-weight:700; cursor:pointer; background:#0E5C33; color:#fff; border:none; }
 </style>
 
 <h1>Pedidos (<?= count($orders) ?>)</h1>
+
+<?php if ($flash): ?>
+  <div class="flash<?= $flash['error'] ? ' error' : '' ?>"><?= htmlspecialchars($flash['msg']) ?></div>
+<?php endif; ?>
+
+<?php if ($pendingErp): ?>
+  <div class="erp-alert">
+    ⚠ <?= count($pendingErp) ?> pedido(s) pago(s) ainda <strong>não lançado(s) no sistema da loja</strong>:
+    <?= implode(', ', array_map(fn($o) => '#' . (int)$o['id'], $pendingErp)) ?>.
+    Lance a venda no sistema e dê baixa no estoque antes de separar.
+  </div>
+<?php endif; ?>
 
 <?php if (empty($orders)): ?>
   <p>Nenhum pedido ainda. Assim que o checkout estiver ativo, as compras aparecem aqui automaticamente.</p>
@@ -59,7 +105,7 @@ require __DIR__ . '/includes/layout_start.php';
       $itemsStmt->execute(['id' => $o['id']]);
       $items = $itemsStmt->fetchAll();
   ?>
-    <div class="order-block">
+    <div class="order-block" id="pedido-<?= (int)$o['id'] ?>">
       <div class="order-head">
         <div>
           <strong>#<?= (int)$o['id'] ?></strong> —
@@ -116,6 +162,40 @@ require __DIR__ . '/includes/layout_start.php';
           <?php endif; ?>
         </tbody>
       </table>
+      <?php if ($o['status'] === 'paid'):
+          $flow = $fulfillmentFlow[$o['fulfillment_method']] ?? $fulfillmentFlow['delivery'];
+          $pos = array_search($o['fulfillment_status'], $flow, true);
+          $nextOptions = $pos === false ? [] : array_slice($flow, $pos + 1);
+      ?>
+        <div class="order-flow">
+          <span>Andamento: <strong><?= $fulfillmentLabels[$o['fulfillment_status']] ?? htmlspecialchars($o['fulfillment_status']) ?></strong></span>
+          <?php if ($o['erp_registered_at']): ?>
+            <span class="erp-ok">✓ Lançado no sistema da loja em <?= date('d/m/Y H:i', strtotime($o['erp_registered_at'])) ?></span>
+          <?php else: ?>
+            <span class="erp-missing">✗ Ainda não lançado no sistema da loja</span>
+          <?php endif; ?>
+          <?php if ($nextOptions): ?>
+            <form method="post" action="order_update.php">
+              <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['orders_csrf']) ?>">
+              <input type="hidden" name="order_id" value="<?= (int)$o['id'] ?>">
+              <select name="fulfillment_status" required>
+                <?php foreach ($nextOptions as $opt): ?>
+                  <option value="<?= $opt ?>"><?= htmlspecialchars($fulfillmentNextLabels[$o['fulfillment_method']][$opt] ?? $fulfillmentLabels[$opt]) ?></option>
+                <?php endforeach; ?>
+              </select>
+              <?php if (!$o['erp_registered_at']): ?>
+                <label class="erp-check">
+                  <input type="checkbox" name="erp_confirm" value="1" required>
+                  Lancei a venda no sistema da loja e dei baixa no estoque
+                </label>
+              <?php endif; ?>
+              <button type="submit">Atualizar</button>
+            </form>
+          <?php endif; ?>
+        </div>
+      <?php elseif ($o['status'] === 'pending'): ?>
+        <div class="order-flow"><span style="color:#777;">Aguardando pagamento. A separação é liberada quando o pagamento for aprovado.</span></div>
+      <?php endif; ?>
     </div>
   <?php endforeach; ?>
 <?php endif; ?>

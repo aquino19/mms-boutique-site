@@ -87,7 +87,7 @@ Um banco MySQL isolado por loja (MM'S: prefixo `u340554535_`). Tabelas usadas pe
 | `store_locations` | Unidades físicas | name, **code** (ex.: `igapo`, `sao_goncalo`), cep, active |
 | `stock_by_store` | Estoque por variação e unidade | variant_id, location_id, quantity (único por variant_id + location_id) |
 | `coupons` / `coupon_products` | Cupons de desconto | code, discount_percent, applies_to, valid_from, valid_until, active / produtos participantes |
-| `orders` | Pedido | dados do cliente, total_amount, coupon_code, discount_amount, shipping_cost, shipping_service, status, fulfillment_method (pickup / delivery), endereço |
+| `orders` | Pedido | dados do cliente, total_amount, coupon_code, discount_amount, shipping_cost, shipping_service, status (pagamento), fulfillment_method (pickup / delivery), endereço, **fulfillment_status** (novo / separado / enviado / entregue), **erp_registered_at / erp_registered_by** (venda lançada no sistema da loja) |
 | `order_items` | Itens do pedido | product_id, variant_id, variant_color, variant_size, quantity, unit_price (cópia do preço na venda), fulfillment_location_id |
 
 **Regras importantes**
@@ -141,6 +141,8 @@ MM'S: Mercado Pago provável, aguardando confirmação da cliente. Conta no CNPJ
 - A chave de casamento é o **SKU da variação**. Os SKUs do site precisam ser iguais aos códigos do sistema da loja.
 - O endpoint grava em `stock_by_store` da unidade informada e recalcula `products.stock`. SKUs desconhecidos são devolvidos na resposta.
 - **Direção:** o sistema da loja é a fonte da verdade, e o n8n puxa os dados para o site.
+- **Vendas do site ainda não lançadas no sistema da loja** são descontadas do número recebido (reserva): pedidos pagos sem `erp_registered_at` e pendentes de pagamento com menos de 3 dias. A resposta traz `reserved_by_online_orders`.
+- **Baixa obrigatória:** no admin (Pedidos), um pedido pago só avança de "Aguardando separação" se a vendedora marcar "Lancei a venda no sistema da loja e dei baixa no estoque" (`admin/order_update.php`). Migração: `database/migration-baixa-sistema-loja.sql`.
 
 | Sistema do cliente | Abordagem no n8n |
 |---|---|
