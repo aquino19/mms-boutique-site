@@ -18,7 +18,7 @@ $navCats = mmsCategories();
 <title><?= $pageTitle ? mmsH($pageTitle) . ' — ' : '' ?>MM'S Boutique</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,450;9..144,600;9..144,700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=2">
+<link rel="stylesheet" href="assets/site.css?v=3">
 </head>
 <body>
 

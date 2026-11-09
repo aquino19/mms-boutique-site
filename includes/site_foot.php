@@ -27,9 +27,9 @@ if (!$fullBleed) echo "</main>\n";
       </div>
       <div>
         <h4>Sobre Nós</h4>
-        <a href="index.php#filosofia">Quem Somos</a>
-        <a href="https://api.whatsapp.com/send?phone=5584988013059" target="_blank" rel="noopener">Perguntas Frequentes</a>
-        <a href="https://api.whatsapp.com/send?phone=5584988013059" target="_blank" rel="noopener">Política de Troca</a>
+        <a href="quem-somos.php">Quem Somos</a>
+        <a href="faq.php">Perguntas Frequentes</a>
+        <a href="trocas-e-devolucoes.php">Trocas e Devoluções</a>
         <a href="cart.php">Meu carrinho</a>
       </div>
       <div>
@@ -49,7 +49,7 @@ if (!$fullBleed) echo "</main>\n";
       </div>
     </div>
     <div class="bottom-row">
-      <span>© <?= date('Y') ?> MM'S Boutique. Todos os direitos reservados.</span>
+      <span>© <?= date('Y') ?> MM'S Boutique. Todos os direitos reservados. · <a href="privacidade.php">Privacidade</a> · <a href="termos-de-uso.php">Termos de uso</a></span>
       <span>CNPJ: 45.913.840/0001-83 · Entrega toda Natal e região · Atendimento via WhatsApp</span>
     </div>
   </div>
