@@ -13,80 +13,69 @@ $id = trim($_POST['id'] ?? '');
 $sku = trim($_POST['sku'] ?? '');
 $name = trim($_POST['name'] ?? '');
 $description = trim($_POST['description'] ?? '');
+$category = trim($_POST['category'] ?? '');
 $price = $_POST['price'] ?? '';
 $imageUrl = trim($_POST['image_url'] ?? '');
+$weightKg = $_POST['weight_kg'] ?? '';
+$heightCm = $_POST['height_cm'] ?? '';
+$widthCm = $_POST['width_cm'] ?? '';
+$lengthCm = $_POST['length_cm'] ?? '';
 $active = isset($_POST['active']) ? 1 : 0;
-$stockByLocation = $_POST['stock_location'] ?? []; // [location_id => qty]
 
-// Validação básica no servidor (nunca confiar só no HTML5 required)
 if ($name === '' || !is_numeric($price) || (float)$price < 0) {
     die('Dados inválidos. Volte e confira nome e preço.');
 }
-foreach ($stockByLocation as $qty) {
-    if (!ctype_digit((string)$qty)) {
-        die('Estoque inválido. Use apenas números inteiros.');
+foreach (['weight_kg' => $weightKg, 'height_cm' => $heightCm, 'width_cm' => $widthCm, 'length_cm' => $lengthCm] as $label => $val) {
+    if (!is_numeric($val) || (float)$val <= 0) {
+        die("Valor inválido para $label. Peso e dimensões são obrigatórios pra calcular frete.");
     }
 }
 
-$pdo->beginTransaction();
-
-try {
-    if ($id !== '') {
-        $productId = (int)$id;
-        $stmt = $pdo->prepare(
-            'UPDATE products
-             SET sku = :sku, name = :name, description = :description, price = :price,
-                 image_url = :image_url, active = :active
-             WHERE id = :id'
-        );
-        $stmt->execute([
-            'sku' => $sku !== '' ? $sku : null,
-            'name' => $name,
-            'description' => $description,
-            'price' => $price,
-            'image_url' => $imageUrl,
-            'active' => $active,
-            'id' => $productId,
-        ]);
-    } else {
-        $stmt = $pdo->prepare(
-            'INSERT INTO products (sku, name, description, price, image_url, active)
-             VALUES (:sku, :name, :description, :price, :image_url, :active)'
-        );
-        $stmt->execute([
-            'sku' => $sku !== '' ? $sku : null,
-            'name' => $name,
-            'description' => $description,
-            'price' => $price,
-            'image_url' => $imageUrl,
-            'active' => $active,
-        ]);
-        $productId = (int)$pdo->lastInsertId();
-    }
-
-    // Grava o estoque de cada unidade (upsert)
-    $upsert = $pdo->prepare(
-        'INSERT INTO stock_by_store (product_id, location_id, quantity)
-         VALUES (:product_id, :location_id, :quantity)
-         ON DUPLICATE KEY UPDATE quantity = VALUES(quantity)'
+if ($id !== '') {
+    $productId = (int)$id;
+    $stmt = $pdo->prepare(
+        'UPDATE products
+         SET sku = :sku, name = :name, description = :description, category = :category, price = :price,
+             image_url = :image_url, weight_kg = :weight_kg, height_cm = :height_cm,
+             width_cm = :width_cm, length_cm = :length_cm, active = :active
+         WHERE id = :id'
     );
-    foreach ($stockByLocation as $locationId => $qty) {
-        $upsert->execute([
-            'product_id' => $productId,
-            'location_id' => (int)$locationId,
-            'quantity' => (int)$qty,
-        ]);
-    }
-
-    // products.stock é sempre recalculado, nunca gravado direto
-    recalcProductStock($pdo, $productId);
-
-    $pdo->commit();
-} catch (Exception $e) {
-    $pdo->rollBack();
-    error_log('Erro ao salvar produto: ' . $e->getMessage());
-    die('Não foi possível salvar o produto. Tente novamente.');
+    $stmt->execute([
+        'sku' => $sku !== '' ? $sku : null,
+        'name' => $name,
+        'description' => $description,
+        'category' => $category !== '' ? $category : null,
+        'price' => $price,
+        'image_url' => $imageUrl,
+        'weight_kg' => $weightKg,
+        'height_cm' => $heightCm,
+        'width_cm' => $widthCm,
+        'length_cm' => $lengthCm,
+        'active' => $active,
+        'id' => $productId,
+    ]);
+} else {
+    $stmt = $pdo->prepare(
+        'INSERT INTO products (sku, name, description, category, price, image_url, weight_kg, height_cm, width_cm, length_cm, active)
+         VALUES (:sku, :name, :description, :category, :price, :image_url, :weight_kg, :height_cm, :width_cm, :length_cm, :active)'
+    );
+    $stmt->execute([
+        'sku' => $sku !== '' ? $sku : null,
+        'name' => $name,
+        'description' => $description,
+        'category' => $category !== '' ? $category : null,
+        'price' => $price,
+        'image_url' => $imageUrl,
+        'weight_kg' => $weightKg,
+        'height_cm' => $heightCm,
+        'width_cm' => $widthCm,
+        'length_cm' => $lengthCm,
+        'active' => $active,
+    ]);
+    $productId = (int)$pdo->lastInsertId();
 }
 
-header('Location: products.php?saved=1');
+// Produto novo já direciona pra tela de variações, já que sem
+// pelo menos 1 variação o produto não pode ser vendido.
+header('Location: product_variants.php?product_id=' . $productId . '&saved=1');
 exit;

@@ -1,29 +1,57 @@
 <?php
-require_once __DIR__.'/../config/config.php'; require_admin(); $pdo=db();
-if($_SERVER['REQUEST_METHOD']==='POST'){
- verify_csrf();
- foreach($_POST['settings']??[] as $k=>$v){
-  if(!preg_match('/^[a-z_]+$/',$k)) continue;
-  $pdo->prepare('INSERT INTO settings(`key`,`value`) VALUES(?,?) ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)')->execute([$k,trim($v)]);
- }
- $logo=upload_image($_FILES['logo']??[]);
- if($logo) $pdo->prepare('INSERT INTO settings(`key`,`value`) VALUES("logo",?) ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)')->execute([$logo]);
- flash('ok','Configurações salvas.'); redirect('settings.php');
-}
-$keys=['brand_name','tagline','primary_color','accent_color','secondary_color','cream_color','hero_title','hero_text','whatsapp','instagram','store_address','pix_key'];
-$vals=[]; foreach($keys as $k) $vals[$k]=setting($k);
-require __DIR__.'/includes/header.php';
+require_once __DIR__ . '/includes/auth.php';
+requireLogin();
+
+$pdo = getDbConnection();
+$products = $pdo->query('SELECT * FROM products ORDER BY created_at DESC')->fetchAll();
+
+$pageTitle = 'Produtos';
+require __DIR__ . '/includes/layout_start.php';
 ?>
-<div class="content"><h1>Identidade & Configurações</h1><p class="muted">Altere a aparência e dados da loja sem editar o código.</p>
-<form class="panel form" method="post" enctype="multipart/form-data">
-<?=csrf_field()?>
-<?php foreach($vals as $k=>$v): ?>
-<label><?=e(ucwords(str_replace('_',' ',$k)))?>
-<?php if(str_contains($k,'color')): ?><input type="color" name="settings[<?=e($k)?>]" value="<?=e($v)?>">
-<?php elseif($k==='hero_text'): ?><textarea name="settings[<?=e($k)?>]"><?=e($v)?></textarea>
-<?php else: ?><input name="settings[<?=e($k)?>]" value="<?=e($v)?>"><?php endif; ?>
-</label>
-<?php endforeach; ?>
-<label>Logo<input type="file" name="logo" accept="image/png,image/jpeg,image/webp"></label>
-<button class="btn">Salvar configurações</button></form></div>
-<?php require __DIR__.'/includes/footer.php';
+
+<div class="toolbar">
+  <h1 style="margin-bottom:0;">Produtos (<?= count($products) ?>)</h1>
+  <a href="product_form.php" class="btn">+ Novo produto</a>
+</div>
+
+<?php if (isset($_GET['saved'])): ?>
+  <div class="success">Produto salvo com sucesso.</div>
+<?php endif; ?>
+
+<?php if (empty($products)): ?>
+  <p>Nenhum produto cadastrado ainda. Clique em "Novo produto" para começar.</p>
+<?php else: ?>
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Preço</th>
+        <th>Estoque</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php foreach ($products as $p): ?>
+        <tr>
+          <td><?= htmlspecialchars($p['name']) ?></td>
+          <td>R$ <?= number_format((float)$p['price'], 2, ',', '.') ?></td>
+          <td><?= (int)$p['stock'] ?></td>
+          <td>
+            <span class="badge <?= $p['active'] ? 'active' : 'inactive' ?>">
+              <?= $p['active'] ? 'Ativo' : 'Inativo' ?>
+            </span>
+          </td>
+          <td>
+            <a class="btn secondary btn-sm" href="product_form.php?id=<?= (int)$p['id'] ?>">Editar</a>
+            <a class="btn secondary btn-sm" href="product_toggle.php?id=<?= (int)$p['id'] ?>">
+              <?= $p['active'] ? 'Desativar' : 'Ativar' ?>
+            </a>
+          </td>
+        </tr>
+      <?php endforeach; ?>
+    </tbody>
+  </table>
+<?php endif; ?>
+
+<?php require __DIR__ . '/includes/layout_end.php'; ?>

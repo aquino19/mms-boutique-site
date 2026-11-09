@@ -67,6 +67,8 @@
   <nav>
     <a href="products.php">Produtos</a>
     <a href="orders.php">Pedidos</a>
+    <a href="coupons.php">Cupons</a>
+    <a href="locations.php">Unidades</a>
     <a href="settings.php">Configurações</a>
     <a href="logout.php">Sair</a>
   </nav>
