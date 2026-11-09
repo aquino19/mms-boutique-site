@@ -14,7 +14,7 @@ require __DIR__ . '/includes/info_page.php';
   <ul>
     <li>Comprou pelo site e desistiu? Você tem <b>7 dias corridos</b> a partir do recebimento para devolver, com reembolso total, inclusive do frete.</li>
     <li>Peça com defeito? Você tem <b>90 dias</b> para nos avisar.</li>
-    <li>Quer outro tamanho ou cor? Fazemos a troca em até <mark class="todo">[A DEFINIR: 30 dias]</mark>.</li>
+    <li>Quer outro tamanho ou cor? Fazemos a troca em até 30 dias.</li>
   </ul>
 </div>
 
@@ -23,14 +23,14 @@ require __DIR__ . '/includes/info_page.php';
 <p>Nesse caso, devolvemos <b>todo o valor pago</b>, incluindo o frete, e o envio de volta da peça não tem custo para você.</p>
 
 <h2>2. Troca por tamanho, cor ou modelo</h2>
-<p>Se a peça não serviu ou você preferiu outra cor, fazemos a troca em até <mark class="todo">[A DEFINIR: 30 dias]</mark> após o recebimento, desde que a peça:</p>
+<p>Se a peça não serviu ou você preferiu outra cor, fazemos a troca em até 30 dias após o recebimento, desde que a peça:</p>
 <ul>
   <li>não tenha sido usada nem lavada;</li>
   <li>esteja com a etiqueta original presa;</li>
   <li>não tenha cheiro de perfume, desodorante ou cigarro, nem manchas ou marcas de maquiagem.</li>
 </ul>
-<p>A troca é feita por outra peça disponível em estoque. Se a nova peça custar mais, você paga a diferença; se custar menos, <mark class="todo">[A DEFINIR: a diferença vira crédito na loja / é devolvida]</mark>.</p>
-<p>Você pode trocar pessoalmente na <b>Loja 02 · SuperFácil Atacado</b> (Av. Dr. Ruy Pereira dos Santos, 258, Olho D'Água, São Gonçalo do Amarante), levando o número do pedido, ou pelo envio. <mark class="todo">[A DEFINIR: quem paga o frete da troca por tamanho/cor feita pelo envio]</mark></p>
+<p>A troca é feita por outra peça disponível em estoque. Se a nova peça custar mais, você paga a diferença; se custar menos, a diferença vira crédito para usar em uma próxima compra.</p>
+<p>Você pode trocar pessoalmente na <b>Loja 02 · SuperFácil Atacado</b> (Av. Dr. Ruy Pereira dos Santos, 258, Olho D'Água, São Gonçalo do Amarante), levando o número do pedido, ou pelo envio. Na troca por tamanho, cor ou modelo feita pelo envio, o frete de ida e de volta fica por conta da cliente.</p>
 <p class="muted">Esta troca é uma cortesia da loja e não substitui o direito de arrependimento do item 1.</p>
 
 <h2>3. Peça com defeito</h2>
@@ -55,10 +55,10 @@ require __DIR__ . '/includes/info_page.php';
 <p>O reembolso é feito pelo mesmo meio de pagamento usado na compra:</p>
 <ul>
   <li><b>Cartão de crédito:</b> pedimos o estorno ao Mercado Pago, e ele aparece na sua fatura em uma ou duas faturas seguintes, conforme o banco emissor.</li>
-  <li><b>PIX ou boleto:</b> devolvemos o valor por PIX, na conta do titular da compra, em até <mark class="todo">[A DEFINIR: 7 dias úteis]</mark> após recebermos a peça.</li>
+  <li><b>PIX ou boleto:</b> devolvemos o valor por PIX, na conta do titular da compra, em até 7 dias úteis após recebermos a peça.</li>
 </ul>
 
 <h2>6. Peças que não podem ser trocadas</h2>
-<p>Por questões de higiene, <mark class="todo">[A DEFINIR: por exemplo, brincos e acessórios de uso íntimo]</mark> não são trocados por tamanho ou gosto. Essa regra <b>não</b> se aplica a defeitos nem ao direito de arrependimento das compras pelo site, que valem para qualquer produto.</p>
+<p>Por questões de higiene, brincos não são trocados por tamanho ou gosto. Essa regra <b>não</b> se aplica a defeitos nem ao direito de arrependimento das compras pelo site, que valem para qualquer produto.</p>
 
 <?php require __DIR__ . '/includes/info_page_end.php'; ?>

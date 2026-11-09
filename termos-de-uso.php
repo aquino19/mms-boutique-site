@@ -24,7 +24,7 @@ require __DIR__ . '/includes/info_page.php';
 <ul>
   <li>O pagamento é feito na página segura do Mercado Pago, pelas formas que ele oferecer no momento (como PIX, cartão de crédito e boleto). O parcelamento disponível é o informado na página de pagamento.</li>
   <li>O pedido é confirmado depois que o pagamento é aprovado. A confirmação aparece na tela ao final da compra, e a loja entra em contato pelo WhatsApp ou e-mail informados.</li>
-  <li>Pedidos não pagos em até <mark class="todo">[A DEFINIR: 3 dias]</mark> podem ser cancelados, e as peças voltam a ficar disponíveis.</li>
+  <li>Pedidos não pagos em até 3 dias podem ser cancelados, e as peças voltam a ficar disponíveis.</li>
   <li>Confira os seus dados antes de finalizar.</li>
 </ul>
 
@@ -38,6 +38,7 @@ require __DIR__ . '/includes/info_page.php';
 <h2>5. Entrega e retirada</h2>
 <ul>
   <li>Entregamos em Natal e região. O valor e o prazo do frete são calculados pelo CEP no checkout, antes do pagamento.</li>
+  <li>O site recebe pedidos 24 horas por dia. A separação e o envio acontecem no horário da Loja 02: de segunda a sábado, das 09h às 20h. Pedidos aprovados fora desse horário são processados no próximo período de funcionamento.</li>
   <li>O prazo de entrega começa a contar a partir da aprovação do pagamento.</li>
   <li>Se preferir, você pode retirar o pedido sem custo na <b>Loja 02 · SuperFácil Atacado</b>, em São Gonçalo do Amarante, depois de receber o aviso de que está pronto. Leve um documento com foto e o número do pedido.</li>
   <li>Confira o endereço com atenção. Se a entrega não acontecer por endereço errado ou ausência de quem recebe, o reenvio pode ter custo.</li>

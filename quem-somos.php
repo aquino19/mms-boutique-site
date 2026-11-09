@@ -10,8 +10,6 @@ require __DIR__ . '/includes/info_page.php';
 
 <p class="info-lead">A MM'S Boutique nasceu em 2022 com uma ideia simples: fazer cada cliente sair do provador se sentindo na sua melhor versão.</p>
 
-<p><mark class="todo">[OPCIONAL: 2 ou 3 frases da cliente sobre como a loja começou, quem está por trás e o que a inspira. Ex.: “Começamos com uma arara e um sonho…”]</mark></p>
-
 <p>Hoje trabalhamos com moda feminina, plus size, infantil, masculina e acessórios: dos vestidos para festas e formaturas às peças do dia a dia. Cada coleção é escolhida com cuidado para valorizar todos os corpos, do P ao 54, da adolescente à mulher madura.</p>
 
 <h2>Use sua melhor versão</h2>

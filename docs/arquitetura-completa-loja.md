@@ -45,6 +45,7 @@ MM'S: n8n em `mms-n8n-n8n.acm0m5.easypanel.host`, com o workflow de estoque impo
 - **Visual:** CSS próprio (`assets/site.css`), direção editorial, paleta da marca (verde, verde-limão, dourado, rose gold e creme) e fontes Fraunces e Manrope. O design do Figma Make foi aplicado como re-skin do PHP, sem migrar para React, para preservar banco, admin e integrações.
 - **Checkout:** coleta dados e entrega e redireciona para a **página hospedada do gateway**. Nenhum dado de cartão passa pelo servidor.
 - **Carrinho:** guardado na sessão PHP (cookie de sessão), sem conta de cliente.
+- **Parcelamento exibido nos cards:** `MMS_MAX_INSTALLMENTS` em `includes/ui.php` (10x, a confirmar no Mercado Pago; 0 esconde).
 
 ### Estrutura de arquivos (`public_html`)
 
@@ -153,7 +154,7 @@ MM'S: Mercado Pago provável, aguardando confirmação da cliente. Conta no CNPJ
 
 ## 9. Chat de IA
 
-`includes/chat_widget.php` (botão flutuante) → `chat_proxy.php` → API da Anthropic. A chave fica só em `chat_proxy.php` no servidor. Hoje está com placeholder, ou seja, desligado na prática. Falta decidir se fica e como se relaciona com o Chatwoot. Se for ativado, a política de privacidade precisa manter o trecho sobre o processamento das mensagens nos EUA.
+`includes/chat_widget.php` (botão flutuante) → `chat_proxy.php` → API da Anthropic. A chave fica só em `chat_proxy.php` no servidor. **Desligado** por decisão da loja (`MMS_CHAT_ENABLED = false` em `includes/ui.php`). Se for ativado, incluir na política de privacidade o processamento das mensagens pela Anthropic, nos EUA.
 
 ---
 
@@ -186,8 +187,8 @@ Trechos destacados em amarelo (`<mark class="todo">`) são decisões pendentes d
 | 5 | Token do Melhor Envio | ⏳ |
 | 6 | Gateway: conta no CNPJ, token e webhook | ⏳ aguardando cliente |
 | 7 | Compra de teste de ponta a ponta | ⏳ depende de 5 e 6 |
-| 8 | Páginas legais e institucionais | 🟡 rascunho pronto; faltam decisões da loja e revisão jurídica |
-| 9 | E-mail do domínio | ⏳ (rodapé usa contato@mmsboutique.com) |
+| 8 | Páginas legais e institucionais | 🟡 prontas com regras padrão (troca 30 dias etc.); falta revisão jurídica |
+| 9 | E-mail do domínio | ⏳ caixa a criar; site já usa contato@mmsboutique.com.br |
 | 10 | VPS com n8n | ✅ no ar; workflow a ativar |
 | 11 | Integração de estoque | ⏳ depende do Sgbr |
 | 12 | Teste em celular real e performance | ⏳ |

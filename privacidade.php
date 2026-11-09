@@ -18,7 +18,7 @@ require __DIR__ . '/includes/info_page.php';
   <li><b>Dados do pedido:</b> nome, e-mail, telefone e, quando há entrega, endereço completo e CEP.</li>
   <li><b>Dados da compra:</b> produtos, valores, cupom usado, forma de entrega e situação do pagamento.</li>
   <li><b>Dados de navegação:</b> um cookie de sessão que guarda o seu carrinho enquanto você navega, além de informações técnicas registradas pelo servidor, como endereço IP, data e hora de acesso.</li>
-  <li><b>Mensagens:</b> o que você nos envia pelo WhatsApp, por e-mail ou pelo chat do site.</li>
+  <li><b>Mensagens:</b> o que você nos envia pelo WhatsApp ou por e-mail.</li>
 </ul>
 <p><b>Não guardamos dados de cartão.</b> O pagamento é feito na página segura do Mercado Pago, e os dados do cartão vão direto para ele, sem passar pelos nossos servidores.</p>
 
@@ -42,12 +42,11 @@ require __DIR__ . '/includes/info_page.php';
   <li><b>Hostinger:</b> empresa que hospeda o site e o banco de dados.</li>
   <li><b>Contabilidade e órgãos públicos:</b> quando exigido por lei, como na emissão de nota fiscal.</li>
   <li><b>Google Fonts:</b> o site carrega fontes do Google, que recebe o seu endereço IP ao exibir a página.</li>
-  <li><mark class="todo">[SE O CHAT DE IA FOR ATIVADO]</mark> <b>Anthropic:</b> as mensagens escritas no chat do site são processadas pela Anthropic, nos Estados Unidos, para gerar as respostas. Não escreva dados sensíveis no chat.</li>
 </ul>
 <p>Não vendemos nem alugamos os seus dados.</p>
 
 <h2>5. Cookies</h2>
-<p>Usamos apenas o cookie de sessão necessário para o carrinho e o checkout funcionarem. Ele é apagado quando você fecha o navegador ou depois de um período sem uso. Não usamos cookies de publicidade nem de rastreamento. <mark class="todo">[REVISAR se for instalado Google Analytics, Meta Pixel ou similar]</mark></p>
+<p>Usamos apenas o cookie de sessão necessário para o carrinho e o checkout funcionarem. Ele é apagado quando você fecha o navegador ou depois de um período sem uso. Não usamos cookies de publicidade nem de rastreamento.</p>
 
 <h2>6. Por quanto tempo guardamos</h2>
 <ul>

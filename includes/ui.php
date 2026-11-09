@@ -5,7 +5,10 @@
  */
 
 /** Máximo de parcelas sem juros exibidas nos cards. Coloque 0 para esconder. */
-const MMS_MAX_INSTALLMENTS = 4;
+const MMS_MAX_INSTALLMENTS = 10; // confirmar no Mercado Pago quando a conta existir
+
+/** Chat de IA no canto da tela. Desligado até haver decisão de uso (chave em chat_proxy.php). */
+const MMS_CHAT_ENABLED = false;
 
 /** Categorias da loja: nome no banco => rótulo, cor de destaque e texto da faixa da página. */
 function mmsCategories(): array

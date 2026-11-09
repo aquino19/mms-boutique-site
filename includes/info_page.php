@@ -35,7 +35,7 @@ function mmsCompany(): array
         'fantasia'   => "MM'S Boutique",
         'cnpj'       => '45.913.840/0001-83',
         'endereco'   => 'Av. Ruy Pereira dos Santos, 258, Loja 005, Olho D\'Água, São Gonçalo do Amarante/RN, CEP 59295-444',
-        'email'      => 'contato@mmsboutique.com',
+        'email'      => 'contato@mmsboutique.com.br',
         'whats'      => '(84) 99900-1179',
         'whats_link' => 'https://wa.me/5584999001179',
         'site'       => 'mmsboutique.com.br',

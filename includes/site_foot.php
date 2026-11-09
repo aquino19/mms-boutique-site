@@ -36,7 +36,7 @@ if (!$fullBleed) echo "</main>\n";
         <h4>Suporte e Vendas</h4>
         <a href="https://api.whatsapp.com/send?phone=5584988013059" target="_blank" rel="noopener">WhatsApp Loja Igapó</a>
         <a href="https://wa.me/5584999001179" target="_blank" rel="noopener">WhatsApp Loja SuperFácil</a>
-        <a href="mailto:contato@mmsboutique.com">contato@mmsboutique.com</a>
+        <a href="mailto:contato@mmsboutique.com.br">contato@mmsboutique.com.br</a>
         <a href="https://www.instagram.com/usemmsboutique/" target="_blank" rel="noopener">@usemmsboutique</a>
       </div>
       <div>
@@ -69,6 +69,6 @@ if (!$fullBleed) echo "</main>\n";
   })();
 </script>
 
-<?php require __DIR__ . '/chat_widget.php'; ?>
+<?php if (MMS_CHAT_ENABLED) require __DIR__ . '/chat_widget.php'; ?>
 </body>
 </html>

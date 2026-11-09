@@ -84,7 +84,7 @@ require __DIR__ . '/includes/site_head.php';
     <p>Na MM'S, cada peça é escolhida com cuidado para que toda mulher se sinta confiante. Do P ao 54, da adolescente à mulher madura — moda que inclui, que valoriza, que dura.</p>
     <a class="btn solid" style="align-self:flex-start;" href="catalog.php">Conhecer a loja</a>
   </div>
-  <div class="editorial-visual"></div>
+  <div class="editorial-visual"><img src="assets/filosofia.jpg" alt="Cliente no provador da MM'S com o lema Use Sua Melhor Versão" loading="lazy"></div>
 </section>
 
 <?php if ($showTestimonials): ?>
