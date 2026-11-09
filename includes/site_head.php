@@ -37,7 +37,7 @@ $navCats = mmsCategories();
 <nav class="site-nav">
   <div class="nav-inner">
     <a href="index.php" class="brand">
-      <img src="assets/logo.png" alt="MM'S Boutique" class="brand-img">
+      <img src="assets/logo-mms.png" alt="MM'S Boutique" class="brand-img">
       <span class="logo">MM<em>'</em>S <span class="logo-sub">boutique</span></span>
     </a>
     <div class="nav-links">

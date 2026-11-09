@@ -9,7 +9,7 @@
   <div id="mms-chat-panel">
     <div id="mms-chat-header">
       <div style="display:flex;align-items:center;gap:10px;">
-        <img src="assets/logo.png" alt="MM'S" style="width:30px;height:30px;border-radius:50%;object-fit:cover;">
+        <img src="assets/logo-mms.png" alt="MM'S" style="width:30px;height:30px;border-radius:50%;object-fit:cover;">
         <div>
           <div style="font-family:var(--serif);font-weight:700;font-size:15px;">MM'S Boutique</div>
           <div style="font-size:11px;color:rgba(243,235,219,.7);">costuma responder em minutos</div>

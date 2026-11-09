@@ -10,7 +10,7 @@ if (!$fullBleed) echo "</main>\n";
     <div class="footer-grid">
       <div class="footer-brand">
         <div class="brand">
-          <img src="assets/logo.png" alt="" class="brand-img">
+          <img src="assets/logo-mms.png" alt="" class="brand-img">
           <span class="logo">MM<em>'</em>S <span class="logo-sub">boutique</span></span>
         </div>
         <p>Moda infantil, adulto, masculina e plus size, feita pra quem gosta de se vestir bem em qualquer ocasião. Desde 2022 em Natal, RN.</p>

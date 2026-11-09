@@ -40,7 +40,7 @@ require __DIR__ . '/includes/site_head.php';
   </div>
   <div class="hero-curtain">
     <div class="drape"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-    <div class="center-mark"><div class="ring"><img src="assets/logo.png" alt="MM'S Boutique"></div></div>
+    <div class="center-mark"><div class="ring"><img src="assets/logo-mms.png" alt="MM'S Boutique"></div></div>
   </div>
 </header>
 
