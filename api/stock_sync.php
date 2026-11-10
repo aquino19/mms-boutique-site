@@ -9,12 +9,11 @@
 // vendido. Contam como reserva os pedidos pagos sem erp_registered_at e
 // os pendentes de pagamento criados há menos de RESERVE_PENDING_DAYS dias.
 //
-// Autenticação simples por segredo compartilhado — troque o valor
-// abaixo por algo único antes de ir pra produção, e configure o
-// mesmo valor no header "X-Sync-Secret" do nó HTTP Request do n8n.
+// Autenticação por segredo compartilhado (cabeçalho X-Sync-Secret).
+// O valor fica em api/sync_secret.php.
 // ============================================================
 
-define('STOCK_SYNC_SECRET', 'TROCAR_AQUI');
+require_once __DIR__ . '/sync_secret.php';
 define('RESERVE_PENDING_DAYS', 3);
 
 require_once __DIR__ . '/../includes/config.php';

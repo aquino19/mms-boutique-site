@@ -154,6 +154,16 @@ MM'S: Mercado Pago provável, aguardando confirmação da cliente. Conta no CNPJ
 
 ---
 
+## 8.1 Catálogo vindo do SG Master (MM'S)
+
+O sistema da loja é o **SG Master (SGBr)**, Firebird 2.5, banco `C:\SGBR\Master\BD\BASESGMASTER.FDB` no PC da Loja 02. Não há grade: **cada tamanho é um produto** com código próprio.
+
+- **No PC:** `C:\mms\mms-sync.ps1` (PowerShell + `isql` do próprio Firebird; nada a instalar) roda a cada 5 min por tarefa agendada, lê os produtos com "Disponibilizar online" e envia a lista **completa** para `POST /api/catalog_sync.php` (cabeçalho `X-Sync-Secret`). Usuário do banco: somente leitura, criado pela SGBr. Consulta configurável em `sync-config.ps1`.
+- **No site (`includes/erp_sync.php`):** agrupa por **Referência** (sem Referência = peça de um tamanho só); tamanho pelo campo Tamanho ou pelo nome ("TAM 40", "… M …"); SKU da variação = código do SG Master. Preço, descrição web, peso e estoque vêm do SG Master; foto, categoria, cor e nome vêm do admin. A peça só fica visível com foto e categoria. Itens que saem do "online" são escondidos. Reserva de pedidos não lançados aplicada. Lista vazia é recusada.
+- **Admin:** upload de foto (redimensiona e corrige rotação), aviso de peças "aguardando foto", hora da última sincronização (alerta após 30 min). Histórico em `erp_sync_log`.
+- Segredo compartilhado em `api/sync_secret.php` (usado por `stock_sync.php` e `catalog_sync.php`).
+- Migração: `database/migration-integracao-sgmaster.sql`.
+
 ## 9. Chat de IA
 
 `includes/chat_widget.php` (botão flutuante) → `chat_proxy.php` → API da Anthropic. A chave fica só em `chat_proxy.php` no servidor. **Desligado** por decisão da loja (`MMS_CHAT_ENABLED = false` em `includes/ui.php`). Se for ativado, incluir na política de privacidade o processamento das mensagens pela Anthropic, nos EUA.
@@ -192,7 +202,7 @@ Trechos destacados em amarelo (`<mark class="todo">`) são decisões pendentes d
 | 8 | Páginas legais e institucionais | 🟡 prontas com regras padrão (troca 30 dias etc.); falta revisão jurídica |
 | 9 | E-mail do domínio | ⏳ caixa a criar; site já usa contato@mmsboutique.com.br |
 | 10 | VPS com n8n | ✅ no ar; workflow a ativar |
-| 11 | Integração de estoque | ⏳ depende do Sgbr |
+| 11 | Integração de estoque | 🟡 programa e site prontos; falta usuário de leitura e nomes das colunas (SGBr) |
 | 12 | Teste em celular real e performance | ⏳ |
 
 ---
