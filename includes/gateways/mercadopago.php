@@ -88,9 +88,15 @@ function mp_create_charge(array $order, string $accessToken): array
     $payload = mp_build_preference_payload($order);
     $data = mp_api_request('POST', 'https://api.mercadopago.com/checkout/preferences', $accessToken, $payload);
 
+    // Credenciais de teste (TEST-...) só funcionam no checkout de sandbox.
+    $isTestToken = strncmp($accessToken, 'TEST-', 5) === 0;
+    $checkoutUrl = $isTestToken
+        ? ($data['sandbox_init_point'] ?? $data['init_point'] ?? null)
+        : ($data['init_point'] ?? null);
+
     return [
         'charge_id' => $data['id'] ?? null,
-        'checkout_url' => $data['init_point'] ?? null,
+        'checkout_url' => $checkoutUrl,
         'status' => 'pending',
     ];
 }
