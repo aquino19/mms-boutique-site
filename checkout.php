@@ -266,6 +266,11 @@ require __DIR__ . '/includes/site_head.php';
     display:flex; justify-content:space-between; align-items:center; gap:10px;
     border:1px solid var(--line); padding:10px 12px; margin-bottom:6px; cursor:pointer; font-size:13px;
   }
+  .checkout-card label.shipping-option{
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    text-transform:none; letter-spacing:0; font-size:14px; font-weight:500; margin:0 0 8px; cursor:pointer;
+  }
+  .checkout-card label.shipping-option strong{ white-space:nowrap; }
   .shipping-option.selected{ border-color:var(--emerald-deep); background:var(--cream-2); }
   .shipping-option input{ width:auto; margin-right:8px; }
   .shipping-loading{ font-size:12px; color:rgba(46,31,24,.5); }
@@ -313,10 +318,10 @@ require __DIR__ . '/includes/site_head.php';
     <label>Como você quer receber?</label>
     <div class="method-options">
       <label class="method-option" id="opt-pickup">
-        <input type="radio" name="fulfillment_method" value="pickup" required> Retirar na loja
+        <input type="radio" name="fulfillment_method" value="pickup" required<?= ($_POST['fulfillment_method'] ?? '') === 'pickup' ? ' checked' : '' ?>> Retirar na loja
       </label>
       <label class="method-option" id="opt-delivery">
-        <input type="radio" name="fulfillment_method" value="delivery" required> Entrega
+        <input type="radio" name="fulfillment_method" value="delivery" required<?= ($_POST['fulfillment_method'] ?? '') === 'delivery' ? ' checked' : '' ?>> Entrega
       </label>
     </div>
     <p style="font-size:12px; color:rgba(46,31,24,.6); margin-top:8px;">
@@ -324,6 +329,14 @@ require __DIR__ . '/includes/site_head.php';
     </p>
 
     <div class="address-fields" id="addressFields">
+      <label for="address_zip">CEP</label>
+      <input type="text" id="address_zip" name="address_zip" inputmode="numeric" maxlength="9" value="<?= htmlspecialchars($_POST['address_zip'] ?? '') ?>" placeholder="00000-000">
+      <p style="font-size:12px; color:rgba(46,31,24,.6); margin:6px 0 0;">Digite o CEP para calcular o frete e preencher o endereço.</p>
+
+      <div id="shippingOptionsBox" style="margin-top:14px;"></div>
+      <input type="hidden" id="shipping_cost" name="shipping_cost" value="">
+      <input type="hidden" id="shipping_service" name="shipping_service" value="">
+
       <label for="address_street">Rua</label>
       <input type="text" id="address_street" name="address_street" value="<?= htmlspecialchars($_POST['address_street'] ?? '') ?>">
 
@@ -352,12 +365,6 @@ require __DIR__ . '/includes/site_head.php';
         </div>
       </div>
 
-      <label for="address_zip">CEP</label>
-      <input type="text" id="address_zip" name="address_zip" value="<?= htmlspecialchars($_POST['address_zip'] ?? '') ?>" placeholder="00000-000">
-
-      <div id="shippingOptionsBox" style="margin-top:14px;"></div>
-      <input type="hidden" id="shipping_cost" name="shipping_cost" value="">
-      <input type="hidden" id="shipping_service" name="shipping_service" value="">
     </div>
 
     <button type="submit" class="cta checkout-submit">Confirmar pedido</button>
@@ -514,7 +521,65 @@ require __DIR__ . '/includes/site_head.php';
       });
   }
 
-  zipInput.addEventListener('blur', fetchShippingOptions);
+  let lastQuotedCep = '';
+  function maybeQuote(force) {
+    const cep = zipInput.value.replace(/\D/g, '');
+    if (cep.length !== 8) return;
+    if (!force && cep === lastQuotedCep) return;
+    lastQuotedCep = cep;
+    fetchShippingOptions();
+    fillAddressFromCep(cep);
+  }
+
+  // Preenche rua, bairro, cidade e UF pelo CEP (ViaCEP); só completa campos vazios
+  function fillAddressFromCep(cep) {
+    fetch('https://viacep.com.br/ws/' + cep + '/json/')
+      .then(r => r.json())
+      .then(d => {
+        if (!d || d.erro) return;
+        const set = (id, v) => { const el = document.getElementById(id); if (el && !el.value && v) el.value = v; };
+        set('address_street', d.logradouro);
+        set('address_neighborhood', d.bairro);
+        set('address_city', d.localidade);
+        set('address_state', d.uf);
+        if (!document.getElementById('address_number').value) document.getElementById('address_number').focus();
+      })
+      .catch(() => {});
+  }
+
+  zipInput.addEventListener('input', () => {
+    let v = zipInput.value.replace(/\D/g, '').slice(0, 8);
+    if (v.length > 5) v = v.slice(0, 5) + '-' + v.slice(5);
+    zipInput.value = v;
+    maybeQuote(false);
+  });
+  zipInput.addEventListener('blur', () => maybeQuote(false));
+  radios.forEach(r => r.addEventListener('change', () => maybeQuote(true)));
+  maybeQuote(true); // volta de um erro com CEP já preenchido
+
+  document.getElementById('checkoutForm').addEventListener('submit', (ev) => {
+    const selected = document.querySelector('input[name="fulfillment_method"]:checked');
+    if (selected && selected.value === 'delivery' && !shippingCostInput.value) {
+      ev.preventDefault();
+      if (zipInput.value.replace(/\D/g, '').length !== 8) {
+        zipInput.focus();
+        alertBox('Digite o CEP para calcular o frete.');
+      } else {
+        shippingBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        alertBox('Escolha uma das opções de frete.');
+      }
+    }
+  });
+  function alertBox(msg) {
+    let el = document.getElementById('shippingHint');
+    if (!el) {
+      el = document.createElement('p');
+      el.id = 'shippingHint';
+      el.className = 'shipping-error';
+      shippingBox.parentNode.insertBefore(el, shippingBox);
+    }
+    el.textContent = msg;
+  }
 </script>
 
 <?php require __DIR__ . '/includes/site_foot.php'; ?>
