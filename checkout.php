@@ -194,7 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $chargeOrder = [
                         'id' => $orderId,
                         'customer_email' => $email,
-                        'base_url' => (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'],
+                        'base_url' => gatewaySiteBaseUrl(),
                         'items' => $chargeItems,
                     ];
                     $charge = gatewayCreateCharge($chargeOrder, $settings);
@@ -207,6 +207,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 } catch (Throwable $e) {
                     error_log('Falha ao criar cobrança no gateway: ' . $e->getMessage());
+                    // Guarda o motivo para o admin ver em Configurações > Testar conexão
+                    try {
+                        $pdo->prepare('UPDATE store_settings SET gateway_last_error = :e WHERE id = 1')
+                            ->execute(['e' => date('d/m/Y H:i') . ' — pedido #' . $orderId . ': ' . mb_substr($e->getMessage(), 0, 900)]);
+                    } catch (Throwable $ignored) {
+                    }
                     // segue pro fallback abaixo — o cliente nunca fica sem retorno
                 }
             }

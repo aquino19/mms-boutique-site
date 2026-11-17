@@ -105,4 +105,9 @@ require __DIR__ . '/includes/layout_start.php';
   </div>
 </form>
 
+<div class="card" style="padding:14px 18px;">
+  <strong>Pagamento não abre ou dá erro?</strong>
+  <a class="btn secondary" href="gateway_test.php" style="margin-left:10px;">Testar conexão com o Mercado Pago</a>
+</div>
+
 <?php require __DIR__ . '/includes/layout_end.php'; ?>

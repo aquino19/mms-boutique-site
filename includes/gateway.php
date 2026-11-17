@@ -33,6 +33,15 @@ function gatewayHandleWebhook(string $provider, array $requestBody, array $store
     };
 }
 
+/** URL base do site (https atrás do proxy da Hostinger também). */
+function gatewaySiteBaseUrl(): string
+{
+    $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https')
+        || (($_SERVER['SERVER_PORT'] ?? '') == 443);
+    return ($https ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'];
+}
+
 /**
  * Processa um webhook recebido de ponta a ponta: carrega a config da loja,
  * chama o adaptador certo, e atualiza o pedido no banco.
@@ -48,6 +57,9 @@ function processIncomingWebhook(PDO $pdo, string $provider, array $requestBody):
 
     $result = gatewayHandleWebhook($provider, $requestBody, $settings);
 
+    if (($result['status'] ?? '') === 'ignored') {
+        return; // notificação que não é de pagamento (ex.: merchant_order)
+    }
     if (!$result['order_id']) {
         throw new RuntimeException('Webhook não trouxe um order_id válido.');
     }

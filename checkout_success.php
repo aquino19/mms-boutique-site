@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/config.php';
+require_once __DIR__ . '/includes/gateway.php';
 
 $pdo = getDbConnection();
 $orderId = (int)($_GET['order_id'] ?? 0);
@@ -29,8 +30,28 @@ foreach ($items as $item) {
     $byLocation[$loc][] = $item;
 }
 
-$settings = $pdo->query('SELECT gateway_provider FROM store_settings WHERE id = 1')->fetch();
+$settings = $pdo->query('SELECT * FROM store_settings WHERE id = 1')->fetch();
 $gateway = $settings['gateway_provider'] ?? null;
+
+// Voltando do Mercado Pago: confirma o pagamento direto na API, sem
+// depender só do webhook. Só aceita se o pagamento for deste pedido.
+$paymentId = $_GET['payment_id'] ?? ($_GET['collection_id'] ?? '');
+if ($paymentId !== '' && $paymentId !== 'null' && $gateway === 'mercadopago'
+    && !empty($settings['gateway_access_token']) && $order['status'] !== 'paid') {
+    try {
+        $payment = mp_get_payment((string)$paymentId, $settings['gateway_access_token']);
+        if ((string)($payment['external_reference'] ?? '') === (string)$order['id']) {
+            $newStatus = mp_map_status($payment['status'] ?? '');
+            if ($newStatus !== $order['status']) {
+                $pdo->prepare('UPDATE orders SET status = :s WHERE id = :id')->execute(['s' => $newStatus, 'id' => $order['id']]);
+                $order['status'] = $newStatus;
+            }
+        }
+    } catch (Throwable $e) {
+        error_log('checkout_success: falha ao confirmar pagamento ' . $paymentId . ': ' . $e->getMessage());
+    }
+}
+$returnedFromGateway = $paymentId !== '' || isset($_GET['collection_status']) || isset($_GET['status']);
 
 function itemLabel(array $item): string
 {
@@ -79,7 +100,7 @@ require __DIR__ . '/includes/site_head.php';
     <?php if ($order['shipping_cost'] > 0): ?>
       <p class="status-line">Frete (<?= htmlspecialchars($order['shipping_service']) ?>): R$ <?= number_format((float)$order['shipping_cost'], 2, ',', '.') ?></p>
     <?php endif; ?>
-    <p class="status-line">Status: Pendente de pagamento</p>
+    <p class="status-line">Status: <?= ['paid' => 'Pago', 'failed' => 'Pagamento não aprovado', 'refunded' => 'Estornado'][$order['status']] ?? 'Pendente de pagamento' ?></p>
 
     <?php if ($order['fulfillment_method'] === 'pickup'): ?>
       <div class="fulfillment-block">
@@ -119,11 +140,26 @@ require __DIR__ . '/includes/site_head.php';
       </div>
     <?php endif; ?>
 
-    <?php if ($gateway): ?>
+    <?php if ($order['status'] === 'paid'): ?>
       <div class="note-box">
-        Em produção, você seria redirecionado agora para o checkout do
+        <strong>Pagamento aprovado!</strong> Já recebemos o seu pedido e vamos separar as peças.
+        Avisamos pelo WhatsApp quando estiver pronto.
+      </div>
+    <?php elseif ($order['status'] === 'failed'): ?>
+      <div class="note-box">
+        O pagamento não foi aprovado. Você pode tentar de novo com outra forma de pagamento,
+        ou falar com a gente pelo <a href="https://wa.me/5584999001179" target="_blank" rel="noopener">WhatsApp</a> informando o pedido #<?= (int)$order['id'] ?>.
+      </div>
+    <?php elseif ($gateway && ($returnedFromGateway || !empty($order['gateway_charge_id']))): ?>
+      <div class="note-box">
+        Estamos aguardando a confirmação do pagamento pelo
         <strong><?= $gateway === 'mercadopago' ? 'Mercado Pago' : 'PagSeguro' ?></strong>.
-        Essa integração final (adaptador de pagamento) ainda precisa ser conectada aqui.
+        Se você pagou com PIX ou boleto, a confirmação pode levar alguns minutos.
+      </div>
+    <?php elseif ($gateway): ?>
+      <div class="note-box">
+        Não conseguimos abrir a página de pagamento agora. O seu pedido #<?= (int)$order['id'] ?> ficou registrado:
+        fale com a gente pelo <a href="https://wa.me/5584999001179" target="_blank" rel="noopener">WhatsApp</a> para concluir a compra.
       </div>
     <?php else: ?>
       <div class="note-box">

@@ -15,24 +15,50 @@
 function mp_build_preference_payload(array $order): array
 {
     $items = [];
+    $hasNegative = false;
+    $total = 0.0;
     foreach ($order['items'] as $item) {
+        $price = round((float)$item['unit_price'], 2);
+        $qty = (int)$item['quantity'];
+        $hasNegative = $hasNegative || $price <= 0;
+        $total += $price * $qty;
         $items[] = [
-            'title' => $item['name'],
-            'quantity' => (int)$item['quantity'],
-            'unit_price' => (float)$item['unit_price'],
+            'title' => mb_substr((string)$item['name'], 0, 250),
+            'quantity' => $qty,
+            'unit_price' => $price,
+            'currency_id' => 'BRL',
         ];
     }
+    // O Mercado Pago não aceita itens com valor negativo (ex.: linha de desconto).
+    // Nesse caso manda uma linha única com o total do pedido.
+    if ($hasNegative) {
+        $items = [[
+            'title' => "Pedido #" . $order['id'] . " - MM'S Boutique",
+            'quantity' => 1,
+            'unit_price' => round($total, 2),
+            'currency_id' => 'BRL',
+        ]];
+    }
 
-    return [
+    $base = rtrim($order['base_url'], '/');
+    $successUrl = $base . '/checkout_success.php?order_id=' . $order['id'];
+    $payload = [
         'items' => $items,
         'payer' => ['email' => $order['customer_email']],
         'external_reference' => (string)$order['id'],
+        'statement_descriptor' => 'MMS BOUTIQUE',
         'back_urls' => [
-            'success' => $order['base_url'] . '/checkout_success.php?order_id=' . $order['id'],
-            'failure' => $order['base_url'] . '/checkout.php',
+            'success' => $successUrl,
+            'pending' => $successUrl,
+            'failure' => $successUrl,
         ],
-        'notification_url' => $order['base_url'] . '/webhooks/mercadopago.php',
+        'notification_url' => $base . '/webhooks/mercadopago.php',
     ];
+    // Volta sozinho para o site depois do pagamento aprovado (exige https)
+    if (strncmp($base, 'https://', 8) === 0) {
+        $payload['auto_return'] = 'approved';
+    }
+    return $payload;
 }
 
 /** Normaliza o status do Mercado Pago para o vocabulário interno da loja. */
@@ -101,6 +127,12 @@ function mp_create_charge(array $order, string $accessToken): array
     ];
 }
 
+/** Dados completos de um pagamento (status, external_reference...). */
+function mp_get_payment(string $paymentId, string $accessToken): array
+{
+    return mp_api_request('GET', 'https://api.mercadopago.com/v1/payments/' . rawurlencode($paymentId), $accessToken);
+}
+
 /** Consulta o status real de um pagamento (nunca confiar só no webhook). */
 function mp_get_charge_status(string $chargeId, string $accessToken): array
 {
@@ -111,7 +143,12 @@ function mp_get_charge_status(string $chargeId, string $accessToken): array
 /** Processa a notificação de webhook do Mercado Pago. */
 function mp_handle_webhook(array $requestBody, string $accessToken): array
 {
-    $paymentId = $requestBody['data']['id'] ?? null;
+    // Formato novo (corpo JSON com data.id) ou antigo (IPN: ?topic=payment&id=...)
+    $type = $requestBody['type'] ?? ($_GET['type'] ?? ($_GET['topic'] ?? 'payment'));
+    if ($type !== 'payment') {
+        return ['order_id' => null, 'status' => 'ignored'];
+    }
+    $paymentId = $requestBody['data']['id'] ?? ($_GET['data_id'] ?? ($_GET['id'] ?? null));
     if (!$paymentId) {
         throw new InvalidArgumentException('Webhook do Mercado Pago sem id de pagamento.');
     }
