@@ -123,7 +123,7 @@ MM'S: Mercado Pago provável, aguardando confirmação da cliente. Conta no CNPJ
 ## 7. Frete — Melhor Envio
 
 - Token pessoal da conta de produção do cliente, colado em Configurações no admin (`store_settings.melhor_envio_token`). Permissão mínima: cálculo de frete.
-- Origem: CEP da unidade que despacha (`store_locations.cep`). MM'S: São Gonçalo, 59290-000.
+- Origem: CEP da unidade que despacha (`store_locations.cep`). MM'S: São Gonçalo, **59295-444** (CEP da rua, o mesmo do CNPJ; o 59290-000 geral da cidade é recusado pelo Melhor Envio).
 - O checkout chama `shipping_quote.php`, que cota com peso e medidas dos produtos do carrinho.
 - Alternativa sem custo: retirada na loja (`fulfillment_method = pickup`).
 
@@ -196,9 +196,9 @@ Trechos destacados em amarelo (`<mark class="todo">`) são decisões pendentes d
 | 2 | Código da loja (site, admin, checkout) | ✅ no ar |
 | 3 | Produtos reais com fotos, SKUs, peso e medidas | 🟡 6 produtos de vitrine prontos para importar, com dados fictícios |
 | 4 | Unidades: Igapó só física, CEP de São Gonçalo | 🟡 |
-| 5 | Token do Melhor Envio | ⏳ |
+| 5 | Token do Melhor Envio | ✅ cotação funcionando |
 | 6 | Gateway: conta no CNPJ, token e webhook | ⏳ aguardando cliente |
-| 7 | Compra de teste de ponta a ponta | ⏳ depende de 5 e 6 |
+| 7 | Compra de teste de ponta a ponta | 🟡 retirada OK (Mercado Pago de teste); entrega a testar |
 | 8 | Páginas legais e institucionais | 🟡 prontas com regras padrão (troca 30 dias etc.); falta revisão jurídica |
 | 9 | E-mail do domínio | ⏳ caixa a criar; site já usa contato@mmsboutique.com.br |
 | 10 | VPS com n8n | ✅ no ar; workflow a ativar |
