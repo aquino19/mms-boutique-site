@@ -87,6 +87,7 @@ require __DIR__ . '/includes/layout_start.php';
   </select>
 
   <label for="gateway_access_token">Access Token do gateway</label>
+  <small style="display:block; color:#777; margin-bottom:6px;">Mercado Pago: começa com <code>APP_USR-</code> e fica em Suas integrações → aplicação → Credenciais de produção → Access Token.</small>
   <input type="text" id="gateway_access_token" name="gateway_access_token"
          placeholder="Cole aqui o token de acesso da conta do gateway"
          value="<?= htmlspecialchars($settings['gateway_access_token'] ?? '') ?>">

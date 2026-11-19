@@ -23,6 +23,12 @@ addCheck($checks, $token !== '', 'Access Token preenchido',
 if ($token !== '' && $token !== ($settings['gateway_access_token'] ?? '')) {
     addCheck($checks, false, 'Token sem espaços', 'O token salvo tem espaço ou quebra de linha no começo/fim. Cole de novo e salve.');
 }
+if ($token !== '') {
+    $formatOk = (bool)preg_match('/^(APP_USR|TEST)-[A-Za-z0-9-]{40,}$/', $token);
+    addCheck($checks, $formatOk, 'Formato de Access Token do Mercado Pago',
+        $formatOk ? 'OK' : 'Este valor não parece um Access Token. O correto começa com APP_USR- (ou TEST-) e tem uns 70 a 80 caracteres. '
+            . 'Provavelmente foi colado outro campo (Client Secret, Public Key ou outra senha).');
+}
 addCheck($checks, function_exists('curl_init'), 'Servidor consegue fazer chamadas (cURL)');
 addCheck($checks, true, 'Endereço do site enviado ao Mercado Pago', gatewaySiteBaseUrl());
 
