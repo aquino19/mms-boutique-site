@@ -36,6 +36,8 @@ if ($token !== '' && function_exists('curl_init')) {
     } elseif ($code === 200) {
         $me = json_decode($body, true) ?: [];
         addCheck($checks, true, 'Token aceito (ambiente de PRODUÇÃO)', 'Conta: ' . trim(($me['firstname'] ?? '') . ' ' . ($me['lastname'] ?? '')) . ' · ' . ($me['email'] ?? ''));
+    } elseif ($code === 403) {
+        addCheck($checks, true, 'Token reconhecido pelo Melhor Envio', 'Ele não tem permissão para ler os dados da conta (users-read), o que não é necessário. O que importa é a cotação abaixo.');
     } else {
         $hint = $code === 401 ? ' — token inválido, expirado ou gerado no SANDBOX (sandbox.melhorenvio.com.br não funciona aqui).' : '';
         addCheck($checks, false, 'Token aceito pelo Melhor Envio', 'HTTP ' . $code . $hint . ' Resposta: ' . mb_substr((string)$body, 0, 400));
@@ -52,6 +54,9 @@ if ($token !== '' && function_exists('curl_init')) {
             $m = $e->getMessage();
             $hint = (stripos($m, '403') !== false || stripos($m, 'scope') !== false || stripos($m, 'permission') !== false)
                 ? ' — o token não tem a permissão de cálculo de frete (shipping-calculate). Gere um token novo marcando essa permissão.' : '';
+            if (stripos($m, 'cep_origem') !== false) {
+                $hint .= ' — o Melhor Envio não reconhece o CEP de origem. Troque em Unidades pelo CEP da rua da loja (ex.: o do CNPJ, 59295-444).';
+            }
             addCheck($checks, false, 'Cotação de ' . $origin . ' para ' . $dest, mb_substr($m, 0, 600) . $hint);
         }
     }
