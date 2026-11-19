@@ -27,7 +27,7 @@ if (!$origin) addCheck($checks, false, 'CEP de origem (sao_goncalo)', 'Cadastre 
 
 if ($token !== '' && function_exists('curl_init')) {
     // 1) Quem é o dono do token
-    $ch = curl_init('https://api.melhorenvio.com.br/api/v2/me');
+    $ch = curl_init('https://melhorenvio.com.br/api/v2/me');
     curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 15, CURLOPT_HTTPHEADER => [
         'Accept: application/json', 'Authorization: Bearer ' . $token, 'User-Agent: MMS Boutique (contato@mmsboutique.com.br)']]);
     $body = curl_exec($ch); $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); $err = curl_error($ch); curl_close($ch);

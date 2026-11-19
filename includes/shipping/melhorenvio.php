@@ -96,6 +96,6 @@ function me_api_request(string $url, string $accessToken, array $body): array
 function me_calculate_shipping(string $originCep, string $destCep, array $items, string $accessToken): array
 {
     $payload = me_build_calculate_payload($originCep, $destCep, $items);
-    $response = me_api_request('https://api.melhorenvio.com.br/api/v2/me/shipment/calculate', $accessToken, $payload);
+    $response = me_api_request('https://melhorenvio.com.br/api/v2/me/shipment/calculate', $accessToken, $payload);
     return me_map_response($response);
 }
