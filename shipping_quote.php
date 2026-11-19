@@ -82,6 +82,11 @@ foreach ($byLocation as $locationId => $group) {
         ];
     } catch (Throwable $e) {
         error_log('Erro ao cotar frete (Melhor Envio): ' . $e->getMessage());
+        try {
+            $pdo->prepare('UPDATE store_settings SET gateway_last_error = :e WHERE id = 1')
+                ->execute(['e' => date('d/m/Y H:i') . ' — frete: ' . mb_substr($e->getMessage(), 0, 900)]);
+        } catch (Throwable $ignored) {
+        }
         $groups[] = [
             'location_id' => $locationId,
             'location_name' => $group['location_name'],

@@ -107,8 +107,9 @@ require __DIR__ . '/includes/layout_start.php';
 </form>
 
 <div class="card" style="padding:14px 18px;">
-  <strong>Pagamento não abre ou dá erro?</strong>
+  <strong>Pagamento ou frete com erro?</strong>
   <a class="btn secondary" href="gateway_test.php" style="margin-left:10px;">Testar conexão com o Mercado Pago</a>
+  <a class="btn secondary" href="shipping_test.php" style="margin-left:6px;">Testar frete (Melhor Envio)</a>
 </div>
 
 <?php require __DIR__ . '/includes/layout_end.php'; ?>
