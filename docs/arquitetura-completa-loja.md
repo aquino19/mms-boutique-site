@@ -164,6 +164,15 @@ O sistema da loja é o **SG Master (SGBr)**, Firebird 2.5, banco `C:\SGBR\Master
 - Segredo compartilhado em `api/sync_secret.php` (usado por `stock_sync.php` e `catalog_sync.php`).
 - Migração: `database/migration-integracao-sgmaster.sql`.
 
+## 8.2 E-mails, "Meus pedidos" e Clientes
+
+- **Envio:** `includes/mailer.php`, SMTP próprio (sem bibliotecas) pelo Gmail da loja (`smtp.gmail.com:465`) com **senha de app**; conta em Configurações (`store_settings.smtp_user/smtp_pass`). Falhas não interrompem o pedido e ficam em `mail_last_error`. Teste em Admin > Configurações > Testar e-mail.
+- **E-mails automáticos:** pedido pago (cliente + aviso para `contact_email`), uma única vez por pedido (`orders.paid_notified_at`); andamento separado/pronto para retirada, enviado e entregue (`orders.fulfillment_notified`).
+- **Meus pedidos** (`meus-pedidos.php`): sem senha. A cliente informa o e-mail e recebe um link válido por 24 h (`customer_access_tokens`, só o hash do token). Resposta igual para e-mail com e sem pedidos; limite de 1 link a cada 2 min por e-mail e 10 por hora por IP.
+- **Admin > Clientes** (`admin/customers.php`): pedidos agrupados por e-mail, com contato, pedidos pagos, total gasto, ticket médio e histórico.
+- E-mail público da loja: **lojamms20@gmail.com** (provisório, até existir caixa no domínio).
+- Migração: `database/migration-emails-clientes.sql`.
+
 ## 9. Chat de IA
 
 `includes/chat_widget.php` (botão flutuante) → `chat_proxy.php` → API da Anthropic. A chave fica só em `chat_proxy.php` no servidor. **Desligado** por decisão da loja (`MMS_CHAT_ENABLED = false` em `includes/ui.php`). Se for ativado, incluir na política de privacidade o processamento das mensagens pela Anthropic, nos EUA.
@@ -200,7 +209,7 @@ Trechos destacados em amarelo (`<mark class="todo">`) são decisões pendentes d
 | 6 | Gateway: conta no CNPJ, token e webhook | ⏳ aguardando cliente |
 | 7 | Compra de teste de ponta a ponta | 🟡 retirada OK (Mercado Pago de teste); entrega a testar |
 | 8 | Páginas legais e institucionais | 🟡 prontas com regras padrão (troca 30 dias etc.); falta revisão jurídica |
-| 9 | E-mail do domínio | ⏳ caixa a criar; site já usa contato@mmsboutique.com.br |
+| 9 | E-mail da loja | 🟡 lojamms20@gmail.com provisório; falta senha de app no admin |
 | 10 | VPS com n8n | ✅ no ar; workflow a ativar |
 | 11 | Integração de estoque | 🟡 programa e site prontos; falta usuário de leitura e nomes das colunas (SGBr) |
 | 12 | Teste em celular real e performance | ⏳ |

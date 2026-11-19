@@ -14,6 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $gatewayAccessToken = trim($_POST['gateway_access_token'] ?? '');
     $gatewayPublicKey = trim($_POST['gateway_public_key'] ?? '');
     $melhorEnvioToken = trim($_POST['melhor_envio_token'] ?? '');
+    $smtpUser = trim($_POST['smtp_user'] ?? '');
+    $smtpPassNew = str_replace(' ', '', trim($_POST['smtp_pass'] ?? ''));
 
     if ($storeName === '') {
         $errors[] = 'O nome da loja é obrigatório.';
@@ -45,6 +47,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'melhor_envio_token' => $melhorEnvioToken !== '' ? $melhorEnvioToken : null,
         ]);
 
+        // Conta de envio de e-mails (colunas da migração de e-mails; ignora se ainda não existir)
+        try {
+            if ($smtpPassNew !== '') {
+                $pdo->prepare('UPDATE store_settings SET smtp_user = :u, smtp_pass = :p WHERE id = 1')
+                    ->execute(['u' => $smtpUser ?: null, 'p' => $smtpPassNew]);
+            } else {
+                $pdo->prepare('UPDATE store_settings SET smtp_user = :u WHERE id = 1')->execute(['u' => $smtpUser ?: null]);
+            }
+        } catch (PDOException $e) {
+        }
+
         header('Location: settings.php?saved=1');
         exit;
     }
@@ -71,9 +84,20 @@ require __DIR__ . '/includes/layout_start.php';
   <input type="text" id="store_name" name="store_name" required
          value="<?= htmlspecialchars($settings['store_name'] ?? '') ?>">
 
-  <label for="contact_email">E-mail de contato</label>
+  <label for="contact_email">E-mail da loja (recebe os avisos de pedido e as respostas das clientes)</label>
   <input type="email" id="contact_email" name="contact_email"
          value="<?= htmlspecialchars($settings['contact_email'] ?? '') ?>">
+
+  <fieldset style="border:1px solid #ddd; padding:12px 16px; margin:18px 0;">
+    <legend style="font-weight:bold; padding:0 6px;">Conta que envia os e-mails (Gmail)</legend>
+    <small style="display:block; color:#777; margin-bottom:6px;">Usada para confirmação de pedido, avisos de andamento e o link de "Meus pedidos".
+      Use uma <b>senha de app</b> do Google (16 letras), não a senha normal do Gmail.</small>
+    <label for="smtp_user">Gmail</label>
+    <input type="email" id="smtp_user" name="smtp_user" placeholder="lojamms20@gmail.com" autocomplete="off"
+           value="<?= htmlspecialchars($settings['smtp_user'] ?? '') ?>">
+    <label for="smtp_pass">Senha de app <?= !empty($settings['smtp_pass']) ? '<span style="color:#0E5C33;">(salva — deixe em branco para manter)</span>' : '' ?></label>
+    <input type="password" id="smtp_pass" name="smtp_pass" autocomplete="new-password" placeholder="xxxx xxxx xxxx xxxx">
+  </fieldset>
 
   <label for="gateway_provider">Gateway de pagamento</label>
   <select id="gateway_provider" name="gateway_provider">
@@ -107,9 +131,10 @@ require __DIR__ . '/includes/layout_start.php';
 </form>
 
 <div class="card" style="padding:14px 18px;">
-  <strong>Pagamento ou frete com erro?</strong>
+  <strong>Algo não funciona?</strong>
   <a class="btn secondary" href="gateway_test.php" style="margin-left:10px;">Testar conexão com o Mercado Pago</a>
   <a class="btn secondary" href="shipping_test.php" style="margin-left:6px;">Testar frete (Melhor Envio)</a>
+  <a class="btn secondary" href="mail_test.php" style="margin-left:6px;">Testar e-mail</a>
 </div>
 
 <?php require __DIR__ . '/includes/layout_end.php'; ?>

@@ -75,4 +75,7 @@ $update->execute([
     'id' => $orderId,
 ]);
 
+require_once __DIR__ . '/../includes/mailer.php';
+mmsNotifyFulfillment($pdo, $orderId, $newStatus);
+
 backToOrders('Pedido #' . $orderId . ' atualizado.');

@@ -69,4 +69,9 @@ function processIncomingWebhook(PDO $pdo, string $provider, array $requestBody):
         'status' => $result['status'],
         'id' => (int)$result['order_id'],
     ]);
+
+    if ($result['status'] === 'paid') {
+        require_once __DIR__ . '/mailer.php';
+        mmsNotifyOrderPaid($pdo, (int)$result['order_id']);
+    }
 }

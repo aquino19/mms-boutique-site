@@ -30,13 +30,14 @@ if (!$fullBleed) echo "</main>\n";
         <a href="quem-somos.php">Quem Somos</a>
         <a href="faq.php">Perguntas Frequentes</a>
         <a href="trocas-e-devolucoes.php">Trocas e Devoluções</a>
+        <a href="meus-pedidos.php">Meus pedidos</a>
         <a href="cart.php">Meu carrinho</a>
       </div>
       <div>
         <h4>Suporte e Vendas</h4>
         <a href="https://api.whatsapp.com/send?phone=5584988013059" target="_blank" rel="noopener">WhatsApp Loja Igapó</a>
         <a href="https://wa.me/5584999001179" target="_blank" rel="noopener">WhatsApp Loja SuperFácil</a>
-        <a href="mailto:contato@mmsboutique.com.br">contato@mmsboutique.com.br</a>
+        <a href="mailto:lojamms20@gmail.com">lojamms20@gmail.com</a>
         <a href="https://www.instagram.com/usemmsboutique/" target="_blank" rel="noopener">@usemmsboutique</a>
       </div>
       <div>

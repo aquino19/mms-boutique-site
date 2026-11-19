@@ -45,6 +45,10 @@ if ($paymentId !== '' && $paymentId !== 'null' && $gateway === 'mercadopago'
             if ($newStatus !== $order['status']) {
                 $pdo->prepare('UPDATE orders SET status = :s WHERE id = :id')->execute(['s' => $newStatus, 'id' => $order['id']]);
                 $order['status'] = $newStatus;
+                if ($newStatus === 'paid') {
+                    require_once __DIR__ . '/includes/mailer.php';
+                    mmsNotifyOrderPaid($pdo, (int)$order['id']);
+                }
             }
         }
     } catch (Throwable $e) {
@@ -143,7 +147,8 @@ require __DIR__ . '/includes/site_head.php';
     <?php if ($order['status'] === 'paid'): ?>
       <div class="note-box">
         <strong>Pagamento aprovado!</strong> Já recebemos o seu pedido e vamos separar as peças.
-        Avisamos pelo WhatsApp quando estiver pronto.
+        Enviamos a confirmação para o seu e-mail, e você acompanha tudo em
+        <a href="meus-pedidos.php" style="text-decoration:underline;">Meus pedidos</a>.
       </div>
     <?php elseif ($order['status'] === 'failed'): ?>
       <div class="note-box">
